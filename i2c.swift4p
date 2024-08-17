@@ -1,0 +1,4 @@
+files:
+- i2c.swift
+- Package.swift
+- module.modulemap

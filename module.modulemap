@@ -1,0 +1,3 @@
+module i2c {
+    export *
+}
