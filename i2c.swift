@@ -99,6 +99,38 @@ public extension Twi {
         return twdr
     }
 
+    static func readFromDevice(address: UInt8, timeout: UInt16) -> UInt8? {
+        guard start(timeout: timeout) else { return nil }
+        defer { stop(timeout: timeout) }
+        guard write(byte: ((address&0x7f)<<1)+1, timeout: timeout) else { return nil }
+        return read(sendAck: false, timeout: timeout)
+    }
+
+    @discardableResult
+    static func writeToDevice(address: UInt8, byte: UInt8, timeout: UInt16) -> Bool {
+        guard start(timeout: timeout) else { return false }
+        guard write(byte: ((address&0x7f)<<1), timeout: timeout) else { return false }
+        guard write(byte: byte, timeout: timeout) else { return false }
+        stop(timeout: timeout)
+        return true
+    }
+
+    @discardableResult
+    static func readDeviceRegister(address: UInt8, register: UInt8, timeout: UInt16) -> UInt8? {
+        guard slaveWrite(address: address, byte: register, timeout: timeout) else { return nil }
+        return slaveRead(address: address, timeout: timeout)
+    }
+
+    @discardableResult
+    static func writeDeviceRegister(address: UInt8, register: UInt8, value: UInt8, timeout: UInt16) -> Bool {
+        guard start(timeout: timeout) else { return false }
+        defer { stop(timeout: timeout) }
+        guard write(byte: ((address&0x7f)<<1), timeout: timeout) else { return false }
+        guard write(byte: register, timeout: timeout) else { return false }
+        guard write(byte: value, timeout: timeout) else { return false }
+        return true
+    }
+
     static func slaveInit(address: UInt8) where Twar.RegisterType == UInt8 {
         twcr.registerValue = (1<<TWINT)|(1<<TWEA)|(1<<TWEN)
         let slaveAddress: UInt8 = address<<1
@@ -108,37 +140,5 @@ public extension Twi {
     /// note: this version doesn't re-enable interrupts
     static func slaveRelease() {
         twcr.registerValue = (1<<TWINT)|(1<<TWEA)|(1<<TWEN)
-    }
-
-    static func slaveRead(address: UInt8, timeout: UInt16) -> UInt8? {
-        guard start(timeout: timeout) else { return nil }
-        defer { stop(timeout: timeout) }
-        guard write(byte: ((address&0x7f)<<1)+1, timeout: timeout) else { return nil }
-        return read(sendAck: false, timeout: timeout)
-    }
-
-    @discardableResult
-    static func slaveWrite(address: UInt8, byte: UInt8, timeout: UInt16) -> Bool {
-        guard start(timeout: timeout) else { return false }
-        guard write(byte: ((address&0x7f)<<1), timeout: timeout) else { return false }
-        guard write(byte: byte, timeout: timeout) else { return false }
-        stop(timeout: timeout)
-        return true
-    }
-
-    @discardableResult
-    static func slaveReadRegister(address: UInt8, register: UInt8, timeout: UInt16) -> UInt8? {
-        guard slaveWrite(address: address, byte: register, timeout: timeout) else { return nil }
-        return slaveRead(address: address, timeout: timeout)
-    }
-
-    @discardableResult
-    static func slaveWriteRegister(address: UInt8, register: UInt8, value: UInt8, timeout: UInt16) -> Bool {
-        guard start(timeout: timeout) else { return false }
-        defer { stop(timeout: timeout) }
-        guard write(byte: ((address&0x7f)<<1), timeout: timeout) else { return false }
-        guard write(byte: register, timeout: timeout) else { return false }
-        guard write(byte: value, timeout: timeout) else { return false }
-        return true
     }
 }
