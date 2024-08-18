@@ -117,8 +117,8 @@ public extension Twi {
 
     @discardableResult
     static func readDeviceRegister(address: UInt8, register: UInt8, timeout: UInt16) -> UInt8? {
-        guard slaveWrite(address: address, byte: register, timeout: timeout) else { return nil }
-        return slaveRead(address: address, timeout: timeout)
+        guard writeToDevice(address: address, byte: register, timeout: timeout) else { return nil }
+        return readFromDevice(address: address, timeout: timeout)
     }
 
     @discardableResult
