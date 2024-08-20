@@ -117,8 +117,13 @@ public extension Twi {
 
     @discardableResult
     static func readDeviceRegister(address: UInt8, register: UInt8, timeout: UInt16) -> UInt8? {
-        guard writeToDevice(address: address, byte: register, timeout: timeout) else { return nil }
-        return readFromDevice(address: address, timeout: timeout)
+        guard start(timeout: timeout) else { return nil }
+        defer { stop(timeout: timeout) }
+
+        guard write(byte: ((address&0x7f)<<1), timeout: timeout) else { return nil }
+        guard write(byte: register, timeout: timeout) else { return nil }
+        guard write(byte: ((address&0x7f)<<1)+1, timeout: timeout) else { return nil }
+        return read(sendAck: false, timeout: timeout)
     }
 
     @discardableResult
