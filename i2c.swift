@@ -85,6 +85,23 @@ public extension Twi where Twsr.RegisterType == UInt8 {
     }
 
     @discardableResult
+    static func slaveWrite(byte: UInt8, sendAck: Bool, timeout: UInt16) -> Bool where Twsr.RegisterType == UInt8 {
+        twdr = byte
+
+        if sendAck {
+            twcr.registerValue = (1<<TWINT)|(1<<TWEA)|(1<<TWEN)
+        } else {
+            twcr.registerValue = (1<<TWINT)|(1<<TWEN)
+        }
+
+        guard waitForHardware(timeout: timeout) else {
+            return false
+        }
+
+        return true
+    }
+
+    @discardableResult
     static func read(sendAck: Bool, timeout: UInt16) -> UInt8? {
         if sendAck {
             twcr.registerValue = (1<<TWINT)|(1<<TWEA)|(1<<TWEN)
