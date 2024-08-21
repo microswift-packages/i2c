@@ -25,7 +25,7 @@ public protocol Twi {
 }
 */
 
-public extension Twi {
+public extension Twi where Twsr.RegisterType == UInt8 {
     /// This just sets the speed. You can call it without parameters for a sensible default.
     /// Use direct register control if you want things like the premultiplier.
     /// It doesn't activate the hardware as there's little point until you're about to perform
@@ -58,7 +58,7 @@ public extension Twi {
             return false
         }
     
-        return twsr.registerValue == 0x08 // TW_START
+        return twsr.registerValue == 0x08 || twsr.registerValue == 0x10 // TW_START or repeated start
     }
 
     /// note: this takes a timeout parameter but currently ignores it
@@ -72,7 +72,7 @@ public extension Twi {
     }
 
     @discardableResult
-    static func write(byte: UInt8, timeout: UInt16) -> Bool {
+    static func write(byte: UInt8, timeout: UInt16) -> Bool where Twsr.RegisterType == UInt8 {
         twdr = byte
         twcr.registerValue = (1<<TWINT)|(1<<TWEN)
         
@@ -122,6 +122,8 @@ public extension Twi {
 
         guard write(byte: ((address&0x7f)<<1), timeout: timeout) else { return nil }
         guard write(byte: register, timeout: timeout) else { return nil }
+
+        guard start(timeout: timeout) else { return nil }
         guard write(byte: ((address&0x7f)<<1)+1, timeout: timeout) else { return nil }
         return read(sendAck: false, timeout: timeout)
     }
