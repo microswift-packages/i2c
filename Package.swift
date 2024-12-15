@@ -10,7 +10,7 @@ let package = Package(
             targets: ["i2c"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/microswift-packages/hal-baseline", from: "1.0.0")
+        .package(url: "https://github.com/microswift-packages/hal-baseline", from: "2.0.0")
     ],
     targets: [
         .target(
